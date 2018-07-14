@@ -7,7 +7,6 @@ describe RocketPants::Client do
   end
   
   describe 'setting versioned endpoints' do
-    
     it 'should default to no version' do
       RocketPants::Client._version.should be_nil
       test_client._version.should be_nil
@@ -35,7 +34,6 @@ describe RocketPants::Client do
       test_client.version 2
       client.send(:endpoint).should == '2/test'
     end
-    
   end
   
   describe 'handling errors' do
@@ -54,15 +52,15 @@ describe RocketPants::Client do
       stub_with_fixture :get, 'error?', 'simple_error'
       expect do
         client.get 'error'
-      end.to raise_error
+      end.to raise_error(StandardError)
     end
-    
+
     it 'should use error description for the exception' do
       begin
         stub_with_fixture :get, 'error?', 'simple_error'
         client.get 'error'
       rescue RocketPants::Error => e
-        error_object = Crack::JSON.parse(api_fixture_json('simple_error'))
+        error_object = JSON.parse(api_fixture_json('simple_error'))
         e.message.should == error_object["error_description"]
       end
     end
@@ -72,7 +70,7 @@ describe RocketPants::Client do
         stub_with_fixture :get, 'error?', 'invalid_resource_error'
         client.get 'error'
       rescue RocketPants::Error => e
-        error_object = Crack::JSON.parse(api_fixture_json('invalid_resource_error'))
+        error_object = JSON.parse(api_fixture_json('invalid_resource_error'))
         e.context.should be_kind_of(Hash)
         e.errors.should  == error_object["messages"]
         e.message.should == error_object["error_description"]
@@ -92,7 +90,6 @@ describe RocketPants::Client do
         client.get 'error'
       end.to raise_error(RocketPants::Error)
     end
-    
   end
   
   describe 'handling responses' do
@@ -125,14 +122,14 @@ describe RocketPants::Client do
       response.should be_kind_of(WillPaginate::Collection)
       response.total_pages.should == 5
       response.total_entries.should == 20
-      response.should == Crack::JSON.parse(api_fixture_json('paginated'))['response']
+      response.should == JSON.parse(api_fixture_json('paginated'))['response']
     end
     
     it 'should correctly unpack arrays of objects' do
       stub_with_fixture :get, 'test?', 'collection'
       response = client.get('test')
       response.should be_kind_of(Array)
-      response.should == Crack::JSON.parse(api_fixture_json('collection'))['response']
+      response.should == JSON.parse(api_fixture_json('collection'))['response']
     end
     
   end
@@ -181,7 +178,6 @@ describe RocketPants::Client do
       response.size.should be > 0
       response.should be_all { |v| v.is_a?(Structured) }
     end
-    
   end
   
   describe 'initialisation' do
@@ -198,9 +194,8 @@ describe RocketPants::Client do
     
     it 'should make it easy to set an api host' do
       add_response_stub stub_request(:get, 'http://localhost:3001/1/test?'), 'simple_object'
-      client.get('test').should == Crack::JSON.parse(api_fixture_json('simple_object'))['response']
+      response_object = JSON.parse(api_fixture_json('simple_object'))['response']
+      client.get('test').should == response_object
     end
-    
   end
-  
 end

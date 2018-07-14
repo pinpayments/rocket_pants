@@ -123,7 +123,7 @@ module RocketPants
     # @param [Hash, Object] response the response to check errors on
     # @raise [RocketPants::Error] a generic error when the type is wrong, or a registered error subclass otherwise.
     def check_response_errors(response)
-      if !response.is_a?(Hash)
+      if !response.is_a?(HTTParty::Response)
         raise RocketPants::Error, "The response from the server was not in a supported format."
       elsif response.has_key?("error")
         klass = RocketPants::Errors[response["error"]] || RocketPants::Error
@@ -133,10 +133,8 @@ module RocketPants
         else
           response["error_description"]
         end
-
         raise klass.new(*error_messages)
       end
     end
-    
   end
 end

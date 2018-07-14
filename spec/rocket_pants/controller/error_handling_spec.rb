@@ -43,17 +43,15 @@ describe RocketPants::ErrorHandling do
 
           before :each do
             controller_class.use_named_exception_notifier :airbrake
-            stub.instance_of(controller_class).airbrake_local_request? { false }
-            stub.instance_of(controller_class).airbrake_request_data { request_data }
-
+            allow_any_instance_of(controller_class).to receive_message_chain(:airbrake_local_request?).and_return(false)
+            allow_any_instance_of(controller_class).to receive_message_chain(:airbrake_request_data).and_return(request_data)
             Airbrake = Class.new do
               define_singleton_method(:notify) { |exception, request_data| }
             end
           end
 
           it 'should send notification when it is the named exception notifier' do
-            mock(Airbrake).notify(exception, request_data)
-
+            allow(Airbrake).to receive(:notify).with(exception, request_data)
             controller_class.exception_notifier_callback.call(controller, exception, request)
           end
         end
@@ -61,12 +59,11 @@ describe RocketPants::ErrorHandling do
         context 'honeybadger' do
           before :each do
             controller_class.use_named_exception_notifier :honeybadger
-            stub.instance_of(controller_class).notify_honeybadger {}
+            allow_any_instance_of(controller_class).to receive(:notify_honeybadger)
           end
 
           it 'should send notification when it is the named exception notifier' do
-            mock(controller).notify_honeybadger(exception)
-
+            expect(controller).to receive(:notify_honeybadger).with(exception)
             controller_class.exception_notifier_callback.call(controller, exception, request)
           end
         end
@@ -74,12 +71,11 @@ describe RocketPants::ErrorHandling do
         context 'bugsnag' do
           before :each do
             controller_class.use_named_exception_notifier :bugsnag
-            stub.instance_of(controller_class).notify_bugsnag {}
+            allow_any_instance_of(controller_class).to receive(:notify_bugsnag)
           end
 
           it 'should send notification when it is the named exception notifier' do
-            mock(controller).notify_bugsnag(exception, request: request)
-
+            expect(controller).to receive(:notify_bugsnag).with(exception, request: request)
             controller_class.exception_notifier_callback.call(controller, exception, request)
           end
         end
@@ -140,31 +136,31 @@ describe RocketPants::ErrorHandling do
 
     before :each do
       # Replace it with a new error mapping.
-      stub(controller_class).error_mapping { error_mapping }
-      stub.instance_of(controller_class).error_mapping { error_mapping }
-      stub(controller_class).test_error { error }
+      allow(controller_class).to receive(:error_mapping) {error_mapping  }
+      allow_any_instance_of(controller_class).to receive(:error_mapping) { error_mapping  }
+      allow(controller_class).to receive(:test_error) { error  }
     end
 
     it 'should let you hook into the error name lookup' do
-      mock.instance_of(controller_class).lookup_error_name(error).returns(:my_test_error).times(any_times)
+      allow_any_instance_of(controller_class).to receive(:lookup_error_name).with(error) { :my_test_error }
       get :test_error
       content['error'].should == 'my_test_error'
     end
 
     it 'should let you hook into the error message lookup' do
-      mock.instance_of(controller_class).lookup_error_message(error).returns 'Oh look, pie.'
+      allow_any_instance_of(controller_class).to receive(:lookup_error_message).with(error) { 'Oh look, pie.' }
       get :test_error
       content['error_description'].should == 'Oh look, pie.'
     end
 
     it 'should let you hook into the error status lookup' do
-      mock.instance_of(controller_class).lookup_error_status(error).returns 403
+      allow_any_instance_of(controller_class).to receive(:lookup_error_status).with(error) { 403 }
       get :test_error
       response.status.should == 403
     end
 
     it 'should let you add error items to the response' do
-      mock.instance_of(controller_class).lookup_error_extras(error).returns(:hello => 'There')
+      allow_any_instance_of(controller_class).to receive(:lookup_error_extras).with(error) { { :hello => 'There' } }
       get :test_error
       content['hello'].should == 'There'
     end
@@ -207,7 +203,7 @@ describe RocketPants::ErrorHandling do
     end
 
     it 'should include parents when checking the mapping' do
-      stub(controller_class).test_error { TestController::YetAnotherError }
+      allow(controller_class).to receive(:test_error) { TestController::YetAnotherError }
       controller_class.error_mapping[TestController::ErrorOfDoom] = RocketPants::Throttled
       get :test_error
       content['error'].should == 'throttled'
@@ -221,8 +217,8 @@ describe RocketPants::ErrorHandling do
 
     before :each do
       # Replace it with a new error mapping.
-      stub(controller_class).error_mapping { error_mapping }
-      stub.instance_of(controller_class).error_mapping { error_mapping }
+      allow(controller_class).to receive(:error_mapping) { error_mapping }
+      allow_any_instance_of(controller_class).to receive(:error_mapping) { error_mapping }
       controller_class.use_named_exception_notifier :default
     end
 
@@ -244,7 +240,7 @@ describe RocketPants::ErrorHandling do
     it 'should default to having the exception message' do
       with_config :show_exception_message, true do
         with_config :pass_through_errors, false do
-          stub(controller_class).test_error { StandardError.new("This is a fake message.") }
+          allow(controller_class).to receive(:test_error) { StandardError.new("This is a fake message.") }
           get :test_error
           content[:error_description].should be_present
           content[:error_description].should == "This is a fake message."
@@ -255,7 +251,7 @@ describe RocketPants::ErrorHandling do
     it 'should let you disable using the exception message' do
       with_config :show_exception_message, false do
         with_config :pass_through_errors, false do
-          stub(controller_class).test_error { StandardError.new("This is a fake message.") }
+          allow(controller_class).to receive(:test_error) { StandardError.new("This is a fake message.") }
           get :test_error
           content[:error_description].should be_present
           content[:error_description].should_not == "This is a fake message."
@@ -276,8 +272,8 @@ describe RocketPants::ErrorHandling do
 
     before :each do
       # Replace it with a new error mapping.
-      stub(controller_class).error_mapping { error_mapping }
-      stub.instance_of(controller_class).error_mapping { error_mapping }
+      allow(controller_class).to receive(:error_mapping) { error_mapping }
+      allow_any_instance_of(controller_class).to receive(:error_mapping) { error_mapping }
       controller_class.exception_notifier_callback = custom_exception_notifier_callback
     end
 

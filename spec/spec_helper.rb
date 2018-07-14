@@ -22,10 +22,9 @@ RSpec.configure do |config|
   config.include ConfigHelper
   config.include WebmockResponses
   config.extend  ReversibleData::RSpec2Macros
-  config.filter_run_excluding :integration => true
 
   config.mock_with(:rspec) do |mocks|
-    # mocks.syntax = [:expect] # disallow old should syntax
+    mocks.syntax = [:expect] # disallow old should syntax
     mocks.verify_partial_doubles = true
   end
 

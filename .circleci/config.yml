@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  run_tests:
+    shell: /bin/bash -e -o pipefail
+    environment:
+      - BUILD_PLATFORM: igg-circleci
+      - REPO_URL: https://github.com/indiegogo/rocket_pants
+      - BUILD_DESCRIPTION: JSON API love for Rails and ActionController
+      - BUNDLE_PATH: vendor/bundle
+
+    docker:
+      - image: gcr.io/indiegogo-staging/monorail-ci-base:v2-current
+        auth:
+          username: _json_key
+          password: $DEV_GCR_KEY_JSON
+
+    steps:
+      - checkout
+      - run:
+          name: "install sqlite3"
+          command: |
+            sudo apt-get update; sudo apt-get install libsqlite3-dev
+      - run:
+          name: "Bundle"
+          command: |
+            bundle install --path ${BUNDLE_PATH} --jobs 4 --retry 3
+      - run:
+          name: "Run rspec"
+          command: |
+            bundle exec rspec ./spec
+
+workflows:
+  version: 2
+  rocket_pants:
+    jobs:
+      - run_tests:
+          context: org-global

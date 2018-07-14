@@ -1,17 +1,11 @@
 require 'spec_helper'
-require 'minitest/mock'
-require 'pry'
 
 describe RocketPants::Caching do
 
   let(:object) do
     obj = Object.new
-    obj.define_singleton_method(:id) do
-      10
-    end
-    obj.define_singleton_method(:cache_key) do
-      10
-    end
+    obj.define_singleton_method(:id) { 10 }
+    obj.define_singleton_method(:cache_key) { 10 }
     obj
   end
   let(:cache_key) { 'my-cache-key'}
@@ -37,10 +31,15 @@ describe RocketPants::Caching do
       RocketPants::Caching.record(object)
       RocketPants.cache[cache_key].should == Digest::MD5.hexdigest('hello')
     end
-    
-    xit 'should let you record an object in the cache with the default inspect value' do
-      RocketPants::Caching.record object
-      RocketPants.cache[cache_key].should == Digest::MD5.hexdigest(object.inspect)
+
+    context "cache_key is not present for object" do
+      before do
+        allow(object).to receive(:cache_key) { nil }
+      end
+      it 'should let you record an object in the cache with the default inspect value' do
+        RocketPants::Caching.record(object)
+        RocketPants.cache[cache_key].should == Digest::MD5.hexdigest(object.inspect)
+      end
     end
   end
   
@@ -84,10 +83,11 @@ describe RocketPants::Caching do
   
   describe 'fetching an object etag' do
     before do
-      allow(RocketPants::Caching).to receive(:cache_key_for).with(object) { cache_key }
+      allow(RocketPants::Caching).to receive(:cache_key_for).with(object) { 'my-cache-key' }
     end
     
-    xit 'should use the cache key as a prefix' do
+    it 'should use the cache key as a prefix' do
+      allow(RocketPants).to receive(:cache) { { 'my-cache-key' => 'hello-world'} }
       RocketPants::Caching.etag_for(object).should =~ /\Amy-cache-key\:/
     end
     
@@ -96,8 +96,8 @@ describe RocketPants::Caching do
       RocketPants::Caching.etag_for(object)
     end
     
-    xit 'should generate a new etag if one does not exist' do
-      allow(RocketPants::Caching).to receive(:record).with(object) { cache_key }
+    it 'should generate a new etag if one does not exist' do
+      allow(RocketPants::Caching).to receive(:record).with(object, 'my-cache-key') { 'my-cache-key' }
       allow(RocketPants).to receive(:cache) { { 'my-cache-key' => nil} }
       RocketPants::Caching.etag_for object
     end

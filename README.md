@@ -1,6 +1,15 @@
-# Rocket Pants! [![Build Status](https://secure.travis-ci.org/Sutto/rocket_pants.png?branch=master)](http://travis-ci.org/Sutto/rocket_pants)
+# Rocket Pants!
 
-**Please Note:** Work on RocketPants 2.0 is currently underway on the [2.0-rewrite](https://github.com/Sutto/rocket_pants/tree/2.0-rewrite) branch. Please check there before requesting features.
+**Please Note:** RocketPants v5.0.0 is an release compatible with Rails 5.0.
+
+## Rails 5.0 Release
+
+Removed: TestHelper, Crack
+Removed: Strange Proxy Test - replaced with unit test
+Upgraded: Rspec, Ruby, Hashie
+Removed: Default Version (sorry you gotta specify it now if you care)
+
+See Changelog for more details.
 
 ## Introduction
 
@@ -635,13 +644,6 @@ post :index, :version => 1, :payload => { :foo => 'bar' ... }
 ```
 
 Otherwise it will raise an exception.
-
-To set the version to be used for all tests in a given set of specs you can use the `default_version` tag. It will set the version for all tests in that block and not require `:version` to be set individually:
-
-```ruby
-describe YourAwesomeController do
-  default_version 1
-end
 ```
 
 RocketPants includes a set of helpers to make testing controllers built on `RocketPants::Base` simpler.
@@ -660,8 +662,14 @@ Likewise, it adds the following helper methods:
 To set up the integration, in your `spec/spec_helper.rb` add:
 
 ```ruby
-config.include RocketPants::TestHelper,    :type => :controller
 config.include RocketPants::RSpecMatchers, :type => :controller
+```
+
+
+For Rocket Pants 5.0 we have removed TestHelper
+Remove this line:
+```
+# config.include RocketPants::TestHelper, :type => :controller
 ```
 
 Inside the `RSpec.configure do |config|` block.

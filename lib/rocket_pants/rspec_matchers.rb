@@ -31,8 +31,27 @@ module RocketPants
       normalise_urls normalise_as_json response, options
     end
 
+    def self.parsed_body(response)
+     begin
+        ActiveSupport::JSON.decode(response.body)
+      rescue StandardError => e
+        nil
+      end
+    end
+
+    def self.decoded_body(response)
+      begin
+        decoded = parsed_body(response)
+        if decoded.is_a?(Hash)
+          Hashie::Mash.new(decoded)
+        else
+          decoded
+        end
+      end
+    end
+
     def self.valid_for?(response, allowed, disallowed)
-      body = response.decoded_body
+      body = decoded_body(response)
       return false if body.blank?
       body = body.to_hash
       return false if body.has_key?("error")
@@ -53,7 +72,7 @@ module RocketPants
     matcher :_be_api_error do |error_type|
 
       match do |response|
-        @error = response.decoded_body.error
+        @error = RSpecMatchers.decoded_body(response).error
         @error.present? && (error_type.blank? || RSpecMatchers.normalised_error(@error) == error_type)
       end
 
@@ -91,31 +110,6 @@ module RocketPants
 
       match do |response|
         RSpecMatchers.valid_for? response, %w(count pagination), %w()
-      end
-
-    end
-
-    matcher :have_exposed do |*args|
-      normalised_response = RSpecMatchers.normalise_response(*args)
-
-      match do |response|
-        @decoded = RSpecMatchers.normalise_urls(response.parsed_body["response"])
-        normalised_response == @decoded
-      end
-
-      should_failure_method     = respond_to?(:failure_message) ? :failure_message : :failure_message_for_should
-      should_not_failure_method = respond_to?(:failure_message_when_negated) ? :failure_message_when_negated : :failure_message_for_should_not
-
-      send(should_failure_method) do |response|
-        message = "expected api to have exposed #{normalised_response.inspect}, got #{@decoded.inspect} instead."
-        if differ = RSpecMatchers.differ
-          message << "\n\nDiff: #{differ.diff_as_object(@decoded, normalised_response)}"
-        end
-        message
-      end
-
-      send(should_not_failure_method) do |response|
-        "expected api to not have exposed #{normalised_response.inspect}"
       end
 
     end
