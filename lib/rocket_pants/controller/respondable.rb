@@ -18,15 +18,11 @@ module RocketPants
     def self.pagination_type(object)
       if object.respond_to?(:total_entries)
         :will_paginate
-      elsif object.respond_to?(:num_pages) && object.respond_to?(:current_page)
+      elsif object.respond_to?(:total_pages) && object.respond_to?(:current_page)
         :kaminari
       else
         nil
       end
-    end
-
-    def self.invalid?(object)
-      object.respond_to?(:errors) && object.errors.present?
     end
 
     def self.paginated?(object)
@@ -49,7 +45,7 @@ module RocketPants
           :pages    => collection.total_pages.try(:to_i)
         }
       when :kaminari
-        current, total, per_page = collection.current_page, collection.num_pages, collection.limit_value
+        current, total, per_page = collection.current_page, collection.total_pages, collection.limit_value
         {
           :current  => current,
           :previous => (current > 1 ? (current - 1) : nil),
@@ -95,18 +91,20 @@ module RocketPants
 
     RENDERING_OPTIONS = [:status, :content_type]
 
+    def default_serializer_options
+      {
+          :url_options => url_options,
+          :root        => false
+      }
+    end
+
     private
 
     def normalise_object(object, options = {})
       Respondable.normalise_object object, options.except(*RENDERING_OPTIONS).reverse_merge(default_serializer_options)
     end
 
-    def default_serializer_options
-      {
-        :url_options => url_options,
-        :root        => false
-      }
-    end
+
 
     def encode_to_json(object)
       ActiveSupport::JSON.encode object
@@ -123,9 +121,9 @@ module RocketPants
       json = encode_to_json(json) unless json.respond_to?(:to_str)
       # Encode the object to json.
       self.status        ||= :ok
-      self.content_type  ||= Mime::JSON
+      self.content_type  ||= Mime[:json]
       self.response_body   = json
-      headers['Content-Length'] = Rack::Utils.bytesize(json).to_s
+      headers['Content-Length'] = (json.bytesize).to_s
     end
 
     # Renders a raw object, without any wrapping etc.
@@ -166,11 +164,7 @@ module RocketPants
       elsif Respondable.collection?(object)
         collection object, options
       else
-        if Respondable.invalid?(object)
-          error! :invalid_resource, object.errors
-        else
-          resource object, options
-        end
+        resource object, options
       end
     end
     alias expose exposes

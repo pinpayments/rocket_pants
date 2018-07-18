@@ -23,7 +23,7 @@ describe RocketPants::Linking do
     let(:pagination)   { WillPaginate::Collection.create(current_page, 10) { |p| p.replace %w(a b c d e f g h i j); p.total_entries = 200 } }
 
     before :each do
-      stub(controller_class).test_data { pagination }
+      allow(controller_class).to receive(:test_data) { pagination }
       # Test Item...
       controller_class.send(:define_method, :page_url) do |page|
         "page#{page}"

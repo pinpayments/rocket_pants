@@ -3,7 +3,7 @@ require 'spec_helper'
 require 'active_record'
 require 'rocket_pants/active_record'
 
-describe RocketPants::Base, 'active record integration', :integration => true, :target => 'active_record' do
+describe RocketPants::Base, 'active record integration', integration: 'true' do
   include ControllerHelpers
 
   use_reversible_tables :fish, :scope => :all

@@ -84,9 +84,12 @@ module RocketPants
     end
 
     def default_env
-      env = Rails.env.to_s if defined?(Rails.env)
-      env ||= ENV['RAILS_ENV'].presence || ENV['RACK_ENV'].presence || "development"
-      ActiveSupport::StringInquirer.new env
+      if defined?(Rails.env) && Rails&.env
+        env = Rails.env.to_s
+      else
+        env ||= ENV['RAILS_ENV'].presence || ENV['RACK_ENV'].presence || "development"
+      end
+      ActiveSupport::StringInquirer.new(env)
     end
 
     def default_pass_through_errors

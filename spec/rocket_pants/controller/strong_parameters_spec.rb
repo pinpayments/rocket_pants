@@ -15,7 +15,7 @@ describe RocketPants::Base, 'strong parameters integration' do
   it "should map parameter missing error to bad request" do
 
     exception = ActionController::ParameterMissing.new :foo
-    mock(controller_class).test_error { raise exception  }
+    allow(controller_class).to receive(:test_error) { raise exception }
 
     with_config :pass_through_errors, false do
       get :test_error
@@ -27,7 +27,7 @@ describe RocketPants::Base, 'strong parameters integration' do
 
   it "should map unpermitted parameters error to bad request" do
     exception = ActionController::UnpermittedParameters.new [:foo, :bar]
-    mock(controller_class).test_error { raise exception }
+    allow(controller_class).to receive(:test_error) { raise exception }
 
     with_config :pass_through_errors, false do
       get :test_error

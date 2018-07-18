@@ -2,6 +2,20 @@
 
 **Please Note**: This change log only covers v1.3 forwards - apologies for anything missing prior to that.
 
+## Version 5.0.0
+
+* Bringing Rocket Pants out of life support, namely: updating Ruby version to 2.3.5
+* Upgraded Gems (Hashie, Rspec)
+* Removed Crack (Don't do crack)
+* 'expose' method no longer validates invalid single objects (removed self.invalid?(object))
+* Fixes to support latest version of Kaminari
+* Use stable version of Indiegogo active_model_serializers
+* Check in Gemfile.lock 
+* Update test dependencies and make sure all tests pass
+* Remove TestHelper Rspec mixin
+* Removed be_exposed Rspec matcher due to egregious testing patterns
+* Removed Proxy Based testing in favor of testing default_serializer_options as unit test
+
 ## Version 1.13.1
 
 * Bug fix to bugsnag, thanks to [DamirSvrtan](https://github.com/DamirSvrtan).
