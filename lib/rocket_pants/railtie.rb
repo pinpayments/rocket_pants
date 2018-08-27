@@ -7,8 +7,6 @@ module RocketPants
     config.rocket_pants.pass_through_errors = nil
     config.rocket_pants.pass_through_errors = nil
 
-    config.i18n.load_path << File.expand_path('../locale/en.yml', __FILE__)
-
     initializer "rocket_pants.logger" do
       ActiveSupport.on_load(:rocket_pants) { self.logger ||= Rails.logger }
     end
@@ -21,6 +19,9 @@ module RocketPants
       RocketPants.serializers_enabled    = rp_config.serializers_enabled unless rp_config.serializers_enabled.nil?
       RocketPants.show_exception_message = rp_config.show_exception_message unless rp_config.show_exception_message.nil?
       RocketPants.pass_through_errors    = rp_config.pass_through_errors unless rp_config.pass_through_errors.nil?
+
+      I18n.load_path << File.expand_path('../locale/en.yml', __FILE__)
+
       # Set the rocket pants cache if present.
       RocketPants.cache = rp_config.cache if rp_config.cache
     end
