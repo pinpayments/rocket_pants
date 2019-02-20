@@ -112,7 +112,8 @@ describe RocketPants::Error do
 
     it 'should let you pass in error messages' do
       o = Object.new
-      mock(o).to_hash { error_messages }
+      o.define_singleton_method(:to_hash) {}
+      allow(o).to receive(:to_hash) { error_messages }
       error = RocketPants::InvalidResource.new(o)
       error.context.should == {:metadata => {:messages => error_messages}}
     end

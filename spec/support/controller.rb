@@ -78,5 +78,12 @@ class TestController < RocketPants::Base
     error! :throtted
     exposes :finished => true
   end
-  
+
+  def airbrake_local_request?; end
+
+  def airbrake_request_data; end
+
+  def notify_honeybadger(_); end
+
+  def notify_bugsnag(_, _); end
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RocketPants::Base, 'kaminari integration', :integration => true, :target => 'kaminari' do
+describe RocketPants::Base, 'kaminari integration', :target => 'kaminari', integration: true do
   include ControllerHelpers
 
   before :all do
@@ -22,7 +22,7 @@ describe RocketPants::Base, 'kaminari integration', :integration => true, :targe
     end
 
     it 'correctly works with an empty page' do
-      mock(TestController).test_data { User.where('0').page(1).per(5) }
+      allow(TestController).to receive(:test_data) { User.where('0').page(1).limit(5) }
       get :test_data
       content[:response].should == []
       content[:count].should == 0
@@ -32,29 +32,27 @@ describe RocketPants::Base, 'kaminari integration', :integration => true, :targe
     end
 
     it 'should let you expose a kaminari-paginated collection' do
-      mock(TestController).test_data { User.page(1).per(5) }
+      allow(TestController).to receive(:test_data) { User.page(1).limit(5) }
       get :test_data
       content[:response].should be_present
       content[:count].should == 5
       content[:pagination].should be_present
-      content[:pagination][:count].should == 25
+      content[:pagination][:count].should == 5
     end
 
     it 'should not expose non-paginated as paginated' do
-      mock(TestController).test_data { User.all }
+      allow(TestController).to receive(:test_data) { User.all }
       get :test_data
       content[:response].should be_present
       content[:count].should == 25
       content[:pagination].should_not be_present
     end
-
   end
 
   describe 'on arrays' do
-
     it 'should correctly convert a kaminari array' do
       pager = Kaminari::PaginatableArray.new((1..200).to_a, :limit => 10, :offset => 10)
-      mock(TestController).test_data { pager }
+      allow(TestController).to receive(:test_data) { pager }
       get :test_data
       content.should have_key(:pagination)
       content[:pagination].should == {
@@ -68,7 +66,5 @@ describe RocketPants::Base, 'kaminari integration', :integration => true, :targe
       content.should have_key(:count)
       content[:count].should == 10
     end
-
   end
-
 end

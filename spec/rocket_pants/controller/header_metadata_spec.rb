@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'will_paginate/collection'
 
 describe RocketPants::HeaderMetadata do
   include ControllerHelpers
@@ -18,14 +19,14 @@ describe RocketPants::HeaderMetadata do
     end
 
     it 'should not include header metadata by default' do
-      mock(TestController).test_data { users }
+      allow(TestController).to receive(:test_data) { users }
       get :test_data
       response.headers.should_not have_key 'X-Api-Count'
     end
 
     it 'should let you turn on header metadata' do
       with_config :header_metadata, true do
-        mock(TestController).test_data { users }
+        allow(TestController).to receive(:test_data) { users }
         get :test_data
         response.headers.should have_key 'X-Api-Count'
         response.headers['X-Api-Count'].should == users.size.to_s
@@ -35,7 +36,7 @@ describe RocketPants::HeaderMetadata do
     it 'should handle nested (e.g. pagination) metadata correctly' do
       with_config :header_metadata, true do
         pager = WillPaginate::Collection.create(2, 10) { |p| p.replace %w(a b c d e f g h i j); p.total_entries = 200 }
-        mock(TestController).test_data { pager }
+        allow(TestController).to receive(:test_data) { pager }
         get :test_data
         h = response.headers
         h['X-Api-Pagination-Next'].should     == '3'
